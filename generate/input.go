@@ -11,7 +11,7 @@ import (
 
 	"github.com/PuerkitoBio/goquery"
 	"github.com/ipinfo/go/v2/ipinfo"
-	"github.com/projectdiscovery/cdncheck"
+	"github.com/liancccc/cdncheck"
 	stringsutil "github.com/projectdiscovery/utils/strings"
 )
 
