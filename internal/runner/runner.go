@@ -12,6 +12,7 @@ import (
 
 	"github.com/liancccc/cdncheck"
 	"github.com/logrusorgru/aurora"
+	"github.com/panjf2000/ants/v2"
 	"github.com/pkg/errors"
 	"github.com/projectdiscovery/gologger"
 	"github.com/projectdiscovery/mapcidr"
@@ -68,18 +69,44 @@ func (r *Runner) SetWriter(writer io.Writer) error {
 func (r *Runner) process(output chan Output, wg *sync.WaitGroup) {
 	defer wg.Done()
 	defer close(output)
-	for _, target := range r.options.Inputs {
-		r.processInputItem(target, output)
+
+	// 创建 ants 协程池，使用配置中的并发数量
+	pool, err := ants.NewPool(r.options.Concurrency)
+	if err != nil {
+		gologger.Fatal().Msgf("Failed to create ants pool: %v", err)
 	}
+	defer pool.Release()
+
+	var taskWg sync.WaitGroup
+
+	// 处理命令行输入
+	for _, target := range r.options.Inputs {
+		taskWg.Add(1)
+		task := target
+		pool.Submit(func() {
+			defer taskWg.Done()
+			r.processInputItem(task, output)
+		})
+	}
+
+	// 处理标准输入
 	if r.options.HasStdin {
 		scanner := bufio.NewScanner(os.Stdin)
 		for scanner.Scan() {
 			text := scanner.Text()
 			if text != "" {
-				r.processInputItem(text, output)
+				taskWg.Add(1)
+				task := text
+				pool.Submit(func() {
+					defer taskWg.Done()
+					r.processInputItem(task, output)
+				})
 			}
 		}
 	}
+
+	// 等待所有任务完成
+	taskWg.Wait()
 }
 
 func (r *Runner) waitForData(output chan Output, wg *sync.WaitGroup) {
