@@ -31,6 +31,8 @@ cdncheck is a tool for identifying the technology associated with dns / ip netwo
 
 ## Features
 
+> 添加国内源和并发
+
 - **CDN**, **CLOUD** and **WAF** Detection
 - **Easy to use as library**
 - Easily extendable providers
@@ -43,7 +45,7 @@ cdncheck is a tool for identifying the technology associated with dns / ip netwo
 **cdncheck** requires **go1.19** to install successfully. Run the following command to install the latest version:
 
 ```sh
-go install -v github.com/projectdiscovery/cdncheck/cmd/cdncheck@latest
+go install -v github.com/liancccc/cdncheck/cmd/cdncheck@latest
 ```
 
 # Usage
